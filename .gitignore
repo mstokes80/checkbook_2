@@ -1,0 +1,45 @@
+# Environment files
+.env
+.env.prod
+.env.local
+
+# SSL certificates
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+
+# Logs
+logs/
+*.log
+nginx/logs/
+
+# Backups
+backups/
+*.sql
+*.dump
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+target/
+dist/
+build/
+node_modules/
+
+# Docker
+docker-compose.override.yml
+/.agent-os/
+/.claude/
+/.cursor/
+/.idea/
+/out/
+/CLAUDE.md

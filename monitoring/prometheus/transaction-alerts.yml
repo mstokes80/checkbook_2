@@ -1,0 +1,155 @@
+groups:
+  - name: transaction_operations
+    rules:
+      # Transaction API Performance Alerts
+      - alert: TransactionAPIHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{uri=~"/api/transactions.*"}[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          service: checkbook-api
+          component: transaction
+        annotations:
+          summary: "Transaction API latency is high"
+          description: "95th percentile latency for transaction API endpoints is {{ $value }}s, which is above the 200ms threshold"
+          runbook_url: "https://docs.company.com/runbooks/transaction-api-latency"
+
+      - alert: TransactionAPIErrorRate
+        expr: rate(http_requests_total{uri=~"/api/transactions.*",status=~"5.."}[5m]) / rate(http_requests_total{uri=~"/api/transactions.*"}[5m]) > 0.01
+        for: 2m
+        labels:
+          severity: critical
+          service: checkbook-api
+          component: transaction
+        annotations:
+          summary: "High error rate in transaction API"
+          description: "Transaction API error rate is {{ $value | humanizePercentage }}, which is above the 1% threshold"
+          runbook_url: "https://docs.company.com/runbooks/transaction-api-errors"
+
+      # Database Performance Alerts
+      - alert: TransactionDatabaseConnectionHigh
+        expr: pg_stat_activity_count{state="active"} > 80
+        for: 2m
+        labels:
+          severity: critical
+          service: postgresql
+          component: transaction
+        annotations:
+          summary: "High number of active database connections"
+          description: "Active database connections: {{ $value }}, which is above the 80 connection threshold"
+          runbook_url: "https://docs.company.com/runbooks/database-connections"
+
+      - alert: TransactionTableLockWait
+        expr: pg_stat_database_tup_fetched{datname="checkbook"} / pg_stat_database_tup_returned{datname="checkbook"} < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+          component: transaction
+        annotations:
+          summary: "Transaction table experiencing lock waits"
+          description: "Database tuple fetch ratio is {{ $value }}, indicating potential lock contention"
+          runbook_url: "https://docs.company.com/runbooks/database-locks"
+
+      # Transaction Business Logic Alerts
+      - alert: TransactionCreationFailure
+        expr: increase(transaction_creation_failures_total[10m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          service: checkbook-api
+          component: transaction
+        annotations:
+          summary: "High number of transaction creation failures"
+          description: "{{ $value }} transaction creation failures in the last 10 minutes"
+          runbook_url: "https://docs.company.com/runbooks/transaction-creation-failures"
+
+      - alert: RunningBalanceCalculationError
+        expr: increase(running_balance_calculation_errors_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: checkbook-api
+          component: transaction
+        annotations:
+          summary: "Running balance calculation errors detected"
+          description: "{{ $value }} running balance calculation errors in the last 5 minutes"
+          runbook_url: "https://docs.company.com/runbooks/running-balance-errors"
+
+      # Bulk Operations Alerts
+      - alert: BulkTransactionOperationSlow
+        expr: histogram_quantile(0.90, rate(bulk_transaction_operation_duration_seconds_bucket[5m])) > 5
+        for: 3m
+        labels:
+          severity: warning
+          service: checkbook-api
+          component: transaction
+        annotations:
+          summary: "Bulk transaction operations are slow"
+          description: "90th percentile bulk operation duration is {{ $value }}s, which is above the 5s threshold"
+          runbook_url: "https://docs.company.com/runbooks/bulk-operations"
+
+      # Data Integrity Alerts
+      - alert: TransactionDataInconsistency
+        expr: increase(transaction_data_inconsistency_total[15m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: checkbook-api
+          component: transaction
+        annotations:
+          summary: "Transaction data inconsistency detected"
+          description: "{{ $value }} data inconsistency issues detected in the last 15 minutes"
+          runbook_url: "https://docs.company.com/runbooks/data-inconsistency"
+
+      # Resource Utilization Alerts
+      - alert: TransactionServiceMemoryHigh
+        expr: container_memory_usage_bytes{container="checkbook-api"} / container_spec_memory_limit_bytes{container="checkbook-api"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: checkbook-api
+          component: transaction
+        annotations:
+          summary: "Transaction service memory usage is high"
+          description: "Memory usage is {{ $value | humanizePercentage }} of the limit"
+          runbook_url: "https://docs.company.com/runbooks/memory-usage"
+
+      - alert: TransactionServiceCPUHigh
+        expr: rate(container_cpu_usage_seconds_total{container="checkbook-api"}[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          service: checkbook-api
+          component: transaction
+        annotations:
+          summary: "Transaction service CPU usage is high"
+          description: "CPU usage is {{ $value | humanizePercentage }} over the last 5 minutes"
+          runbook_url: "https://docs.company.com/runbooks/cpu-usage"
+
+  - name: transaction_business_metrics
+    rules:
+      # Business Logic Alerts
+      - alert: TransactionVolumeAnomaly
+        expr: abs(rate(transactions_created_total[1h]) - rate(transactions_created_total[1h] offset 24h)) / rate(transactions_created_total[1h] offset 24h) > 0.5
+        for: 30m
+        labels:
+          severity: warning
+          service: checkbook-api
+          component: transaction
+        annotations:
+          summary: "Unusual transaction volume detected"
+          description: "Transaction creation rate differs by {{ $value | humanizePercentage }} from the same time yesterday"
+          runbook_url: "https://docs.company.com/runbooks/transaction-volume"
+
+      - alert: CategoryUsageImbalance
+        expr: stddev(rate(transactions_by_category_total[6h])) > 5
+        for: 1h
+        labels:
+          severity: info
+          service: checkbook-api
+          component: transaction
+        annotations:
+          summary: "Unusual category usage pattern detected"
+          description: "Standard deviation of category usage is {{ $value }}, indicating potential categorization issues"
+          runbook_url: "https://docs.company.com/runbooks/category-usage"

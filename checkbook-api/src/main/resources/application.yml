@@ -1,0 +1,116 @@
+spring:
+  application:
+    name: checkbook-api
+
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/checkbook
+    username: checkbook_user
+    password: checkbook_password
+    driver-class-name: org.postgresql.Driver
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    open-in-view: false
+
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    out-of-order: false
+
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+  # Mail Configuration
+  mail:
+    host: localhost
+    port: 1025
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+          ssl:
+            enable: false
+
+  # Security Configuration
+  security:
+    user:
+      name: admin
+      password: admin123
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# JWT Configuration
+jwt:
+  secret: your-256-bit-secret-key-change-this-in-production
+  expiration: 86400000  # 24 hours in milliseconds
+
+
+# Application Configuration
+app:
+  name: Checkbook Balance
+  version: 1.0.0
+  base-url: http://localhost:3000
+
+  # CORS Configuration
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:5173
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+    allow-credentials: true
+    max-age: 3600
+
+  # Rate Limiting Configuration
+  rate-limiting:
+    enabled: true
+    login-attempts: 5
+    login-window-minutes: 15
+    register-attempts: 3
+    register-window-minutes: 60
+    password-reset-attempts: 3
+    password-reset-window-minutes: 60
+
+  # Request Logging Configuration
+  logging:
+    enabled: true
+    log-headers: false
+    log-body: false
+
+# Logging Configuration
+logging:
+  level:
+    com.checkbook: DEBUG
+    org.springframework.security: DEBUG
+    org.flywaydb: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

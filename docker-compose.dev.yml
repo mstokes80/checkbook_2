@@ -1,0 +1,42 @@
+# Development Docker Compose Override
+# Use: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: checkbook_dev
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./checkbook-api
+      dockerfile: Dockerfile.dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/checkbook_dev
+      LOG_LEVEL: DEBUG
+    volumes:
+      - ./checkbook-api/src:/app/src
+      - ./checkbook-api/target:/app/target
+      - ./checkbook-api/logs:/app/logs
+    ports:
+      - "8080:8080"
+      - "5005:5005"  # Debug port
+
+  ui:
+    build:
+      context: ./checkbook-ui
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./checkbook-ui/src:/app/src
+      - ./checkbook-ui/public:/app/public
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+
+volumes:
+  postgres_dev_data:

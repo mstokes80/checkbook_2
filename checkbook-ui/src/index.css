@@ -1,0 +1,205 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+    padding: 0.5rem 1rem;
+    height: 2.25rem;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground shadow hover:bg-primary/90;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80;
+  }
+
+  .btn-outline {
+    @apply border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .input {
+    @apply flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .card {
+    @apply rounded-xl border bg-card text-card-foreground shadow;
+  }
+
+  .label {
+    @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+  }
+
+  /* Balance Display Components */
+  .balance-positive {
+    @apply text-green-600 dark:text-green-400;
+  }
+
+  .balance-negative {
+    @apply text-red-600 dark:text-red-400;
+  }
+
+  .balance-zero {
+    @apply text-muted-foreground;
+  }
+
+  .running-balance {
+    @apply font-semibold text-right font-mono tabular-nums;
+  }
+
+  .current-balance-container {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm p-4 mb-4;
+  }
+
+  .current-balance-header {
+    @apply flex justify-between items-center mb-2;
+  }
+
+  .current-balance-header h2 {
+    @apply text-lg font-semibold text-foreground m-0;
+  }
+
+  .account-name {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .current-balance {
+    @apply text-3xl font-bold font-mono tabular-nums mb-1;
+  }
+
+  .current-balance--positive {
+    @apply text-green-600 dark:text-green-400;
+  }
+
+  .current-balance--negative {
+    @apply text-red-600 dark:text-red-400;
+  }
+
+  .current-balance--zero {
+    @apply text-muted-foreground;
+  }
+
+  .balance-updated {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .balance-change-indicator {
+    @apply inline-block ml-1 text-sm font-medium;
+  }
+
+  .balance-change-indicator.increase {
+    @apply text-green-600 dark:text-green-400;
+  }
+
+  .balance-change-indicator.decrease {
+    @apply text-red-600 dark:text-red-400;
+  }
+
+  /* Mobile-specific balance styles */
+  @media (max-width: 768px) {
+    .current-balance {
+      @apply text-2xl;
+    }
+
+    .current-balance-header {
+      @apply flex-col items-start gap-1;
+    }
+
+    .running-balance {
+      @apply text-sm;
+    }
+
+    .transaction-card-mobile {
+      @apply bg-card border border-border rounded-md p-3 mb-2 shadow-sm;
+    }
+
+    .transaction-card-header {
+      @apply flex justify-between items-start mb-2;
+    }
+
+    .transaction-description {
+      @apply font-medium flex-1 mr-2;
+    }
+
+    .transaction-amount {
+      @apply font-semibold font-mono tabular-nums;
+    }
+
+    .transaction-card-details {
+      @apply flex justify-between items-center text-sm text-muted-foreground;
+    }
+  }
+
+  /* Accessibility enhancements */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .balance-positive {
+      @apply text-green-800 dark:text-green-200;
+    }
+
+    .balance-negative {
+      @apply text-red-800 dark:text-red-200;
+    }
+
+    .balance-zero {
+      @apply text-gray-900 dark:text-gray-100;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .balance-change-indicator {
+      @apply transition-none;
+    }
+  }
+}
