@@ -1,5 +1,6 @@
 # Production Docker Compose Configuration
 # This file is optimized for production deployment on Ubuntu Linux server
+# Usage: docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 
 services:
   # PostgreSQL Database
