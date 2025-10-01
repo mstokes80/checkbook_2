@@ -82,22 +82,22 @@ fi
 # Build Docker images
 echo -e "${GREEN}Building Docker images...${NC}"
 cd "$PROJECT_ROOT"
-docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --no-cache
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --no-cache
 
 # Stop existing containers
 echo -e "${GREEN}Stopping existing containers...${NC}"
-docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down || true
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down || true
 
 # Start containers
 echo -e "${GREEN}Starting containers...${NC}"
-docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
 
 # Wait for services to be healthy
 echo -e "${GREEN}Waiting for services to be healthy...${NC}"
 max_wait=120
 waited=0
 while [ $waited -lt $max_wait ]; do
-    if docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps | grep -q "unhealthy"; then
+    if docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps | grep -q "unhealthy"; then
         echo -e "${YELLOW}Waiting for services to become healthy... (${waited}s/${max_wait}s)${NC}"
         sleep 5
         waited=$((waited + 5))
@@ -108,7 +108,7 @@ done
 
 # Check if all services are running
 echo -e "${GREEN}Checking service status...${NC}"
-docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps
 
 # Test API health
 echo -e "${GREEN}Testing API health endpoint...${NC}"
@@ -131,4 +131,4 @@ echo -e "Restart services: ${YELLOW}docker-compose -f docker-compose.prod.yml re
 echo
 
 # Display running containers
-docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps

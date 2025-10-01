@@ -26,24 +26,21 @@ FROM nginx:alpine
 # Copy built assets from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Create nginx user and set permissions
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
-    chown -R nginx:nginx /etc/nginx/conf.d
-
-# Switch to nginx user
-USER nginx
+# Set permissions
+RUN chown -R nginx:nginx /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1 || exit 1
 
-# Start nginx
+# Start nginx (runs as root, worker processes run as nginx user)
 CMD ["nginx", "-g", "daemon off;"]
