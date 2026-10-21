@@ -90,7 +90,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -144,13 +144,17 @@ services:
       - certbot_conf:/etc/letsencrypt:ro
     networks:
       - checkbook-prod-network
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     depends_on:
       api:
         condition: service_healthy
       ui:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/health"]
       interval: 30s
       timeout: 10s
       retries: 3

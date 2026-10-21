@@ -6,31 +6,84 @@
 ```
 WARN[0000] The "REDIS_PASSWORD" variable is not set. Defaulting to a blank string.
 WARN[0000] The "MAIL_USERNAME" variable is not set. Defaulting to a blank string.
+WARN[0000] The "MAIL_PASSWORD" variable is not set. Defaulting to a blank string.
 ```
 
-### Root Cause
-Docker Compose doesn't automatically load `.env.prod` - it only loads `.env` by default.
+### Root Causes
+
+1. **Special characters in values not quoted** - Most common issue
+2. **Using `docker-compose` (hyphenated) instead of `docker compose`** - Version compatibility
+3. **File encoding issues** - Windows line endings (CRLF) instead of Unix (LF)
+4. **Syntax errors in .env.prod** - Spaces in cron expressions, unquoted values with special chars
 
 ### Solution
 
-**Always use `--env-file` flag:**
+**Step 1: Validate your .env.prod file**
+
+Run the validation script:
+```bash
+./scripts/deploy/validate-env.sh
+```
+
+This will check:
+- File can be sourced by bash
+- All critical variables are set
+- Docker Compose can read the file
+
+**Step 2: Fix common issues in .env.prod**
 
 ```bash
-# CORRECT ✅
+# ✅ CORRECT - Quote passwords with special characters
+POSTGRES_PASSWORD="2wq1}bJjtE6£"
+REDIS_PASSWORD="12#~3QfBfw~u"
+MAIL_PASSWORD='$85z6Et\eT7ADF%G'  # Single quotes for $ and \
+BACKUP_SCHEDULE="0 2 * * *"        # Quote cron expressions
+
+# ❌ WRONG - Unquoted special characters
+POSTGRES_PASSWORD=2wq1}bJjtE6£
+REDIS_PASSWORD=12#~3QfBfw~u
+MAIL_PASSWORD=$85z6Et\eT7ADF%G
+BACKUP_SCHEDULE=0 2 * * *
+```
+
+Special characters that REQUIRE quotes:
+- `$` - Variable expansion
+- `\` - Escape character
+- `#` - Comment
+- `~` - Home directory expansion
+- `*` - Glob pattern
+- Spaces - Word splitting
+- `£`, `€`, and other non-ASCII characters
+
+**Step 3: Use correct Docker Compose command**
+
+```bash
+# ✅ CORRECT - New Docker CLI (recommended)
 docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 
-# WRONG ❌
-docker compose -f docker-compose.prod.yml up -d
+# ❌ OUTDATED - Old standalone docker-compose (may have issues)
+docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
+```
+
+**Step 4: Check file encoding**
+
+```bash
+# Check for Windows line endings
+file .env.prod
+
+# Convert if needed (should show "ASCII text")
+dos2unix .env.prod  # or
+sed -i 's/\r$//' .env.prod
 ```
 
 ### Quick Fix
 
-Run the fix script:
+Run the deployment script (now updated):
 ```bash
-./scripts/deploy/fix-and-redeploy.sh
+./scripts/deploy/deploy.sh
 ```
 
-Or manually:
+Or manually redeploy:
 ```bash
 # Stop services
 docker compose -f docker-compose.prod.yml --env-file .env.prod down
@@ -42,9 +95,20 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 ### Verify Environment Variables Are Loaded
 
 ```bash
-# Check if environment variables are set in containers
+# Validate first
+./scripts/deploy/validate-env.sh
+
+# Check in running containers
 docker exec checkbook-api-prod env | grep POSTGRES_PASSWORD
-docker exec checkbook-redis-prod env | grep REDIS
+docker exec checkbook-redis-prod env | grep REDIS_PASSWORD
+docker exec checkbook-api-prod env | grep MAIL_HOST
+```
+
+### Debug: View what Docker Compose sees
+
+```bash
+# This shows the final docker-compose config with substituted variables
+docker compose -f docker-compose.prod.yml --env-file .env.prod config | grep -A 5 "environment:"
 ```
 
 ---
