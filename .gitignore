@@ -17,6 +17,8 @@ nginx/logs/
 backups/
 *.sql
 *.dump
+# Flyway migrations are source, not backups
+!checkbook-api/src/main/resources/db/migration/*.sql
 
 # IDE
 .idea/
